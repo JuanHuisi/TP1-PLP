@@ -24,7 +24,7 @@ module Histograma
 where
 
 import Util
-
+import Data.List (zipWith4)
 data Histograma = Histograma Float Float [Int]
   deriving (Show, Eq)
 
@@ -32,15 +32,16 @@ data Histograma = Histograma Float Float [Int]
 -- valores en el rango y 2 casilleros adicionales para los valores fuera del rango.
 -- Require que @l < u@ y @n >= 1@.
 vacio :: Int -> (Float, Float) -> Histograma
-vacio n (l, u) = error "COMPLETAR EJERCICIO 3"
+vacio n (l, u) = (Histograma l u ([0 | x <- [0..n]]))
 
 -- | Agrega un valor al histograma.
 agregar :: Float -> Histograma -> Histograma
-agregar x _ = error "COMPLETAR EJERCICIO 4"
+agregar x (Histograma l u xs) = (Histograma l u (actualizarElem (floor (x / u)) (+1) xs))
 
 -- | Arma un histograma a partir de una lista de números reales con la cantidad de casilleros y rango indicados.
 histograma :: Int -> (Float, Float) -> [Float] -> Histograma
-histograma n r xs = error "COMPLETAR EJERCICIO 5"
+histograma n r = foldr (\x acc -> agregar x acc) (vacio n r)
+
 
 -- | Un `Casillero` representa un casillero del histograma con sus límites, cantidad y porcentaje.
 -- Invariante: Sea @Casillero m1 m2 c p@ entonces @m1 < m2@, @c >= 0@, @0 <= p <= 100@
@@ -65,4 +66,22 @@ casPorcentaje (Casillero _ _ _ p) = p
 
 -- | Dado un histograma, devuelve la lista de casilleros con sus límites, cantidad y porcentaje.
 casilleros :: Histograma -> [Casillero]
-casilleros _ = error "COMPLETAR EJERCICIO 6"
+casilleros h = zipWith4 Casillero
+                      (auxCasMin h)
+                      (auxCasMax h)
+                      (auxCascant h)
+                      (auxCasPor h)
+
+
+auxCasMin :: Histograma -> [Float]
+auxCasMin (Histograma l u xs) =  [infinitoNegativo] ++ [l+((fromIntegral x)*u) | x <-[0..(length xs - 2)]]
+
+
+auxCasMax :: Histograma -> [Float]
+auxCasMax (Histograma l u xs) =  [l+((fromIntegral x)*u) | x <-[0..(length xs - 2)]] ++ [infinitoPositivo]
+
+auxCascant :: Histograma -> [Int]
+auxCascant (Histograma l u xs) = xs
+
+auxCasPor :: Histograma -> [Float]
+auxCasPor (Histograma l u xs) = foldr (\x acc -> ((fromIntegral x) / (fromIntegral (sum xs) )) * 100  : acc ) [] xs
