@@ -32,7 +32,7 @@ data Histograma = Histograma Float Float [Int]
 -- valores en el rango y 2 casilleros adicionales para los valores fuera del rango.
 -- Require que @l < u@ y @n >= 1@.
 vacio :: Int -> (Float, Float) -> Histograma
-vacio n (l, u) = (Histograma l u ([0 | x <- [0..n]]))
+vacio n (l, u) = (Histograma l u ([0 | x <- [0..n+1]]))
 
 -- | Agrega un valor al histograma.
 agregar :: Float -> Histograma -> Histograma
