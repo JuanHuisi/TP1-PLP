@@ -46,8 +46,53 @@ foldExpr fConst fRango fSuma fResta fMult fDiv fExpr = case fExpr of
   where rec = foldExpr fConst fRango fSuma fResta fMult fDiv
 
 -- | Evaluar expresiones dado un generador de números aleatorios
+--Definir la funci´on eval que permite obtener una posible evaluaci´on de una expresi´on dado
+ --un generador de n´umeros aleatorios. No se permite recursi´on expl´ıcita.
+ --El tipo deseado es eval :: Expr → Gen → (Float, Gen) para poder obtener el generador
+ --resultante despu´es de generar algunos n´umeros aleatorios para evaluar los rangos. Puede escribirse
+ --usando G a como eval :: Expr → G Float.
+ --Se debe usar dameUno para determinar el valor de un rango.
 eval :: Expr -> G Float
-eval = error "COMPLETAR EJERCICIO 8"
+eval =
+  foldExpr
+    (\x g -> (x, g)) --Caso const x
+    (\l u g -> dameUno (l, u) g) -- Caso Rango. Por enunciado tenemos que utilizar dameUno.
+    (\fa fb g -> case fa g of
+                    (x, g1) -> case fb g1 of
+                                 (y, g2) -> (x + y, g2)) --Caso Suma. Es bastante extenso de explicar.
+                                 -- La idea es que nosotros vamos a tener Suma fa fb, y el g va a ser nuestro gen.
+                                 -- Entonces, primero evaluo fa g para modificar el generador, y luego con el generador modificado g1 calculo fb g1. 
+                                 -- Esto lo guardo en g2, y luego devuelvo la suma con el generador g2. 
+                                 -- Basicamente esto se repite con todos los demás casos. CHEQUEAR QUE PASA EN LA DIVISIÓN SI LE PASAMOS 0.
+    (\fa fb g -> case fa g of
+                    (x, g1) -> case fb g1 of 
+                                 (y, g2) -> (x - y, g2))
+    (\fa fb g -> case fa g of
+                    (x, g1) -> case fb g1 of
+                                 (y, g2) -> (x * y, g2))
+    (\fa fb g -> case fa g of
+                    (x, g1) -> case fb g1 of 
+                                 (y, g2) -> (x / y, g2))
+
+--Otra manera de hacer eval. La explicación es la misma que la de arriba, solamente que acá utilizo let para crear variables intermedias.
+--El proceso es lo mismo, voy evaluando cada parte de la expresión que genemos y la vamos guardando en el generador.
+--Lo hacemos para ambos elementos y para la operación final. 
+--Usemos la que mas les guste. Recuerden que si usan esta, cambien el nombre de eval2 a eval.
+eval2 :: Expr -> G Float
+eval2 = foldExpr (\x g -> (x, g))
+                 (\d u g -> dameUno (d, u) g)
+                 (\x y g -> let (a, g1) = x g
+                                (b, g2) = y g1 
+                            in (a + b, g2))
+                  (\x y g -> let (a, g1) = x g
+                                 (b, g2) = y g1  
+                              in (a - b, g2))
+                    (\x y g -> let (a, g1) = x g
+                                   (b, g2) = y g1
+                              in (a * b, g2)) 
+                    (\x y g -> let (a, g1) = x g
+                                   (b, g2) = y g1
+                              in (a / b, g2)) 
 
 -- | @armarHistograma m n f g@ arma un histograma con @m@ casilleros
 -- a partir del resultado de tomar @n@ muestras de @f@ usando el generador @g@.
