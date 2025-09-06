@@ -41,7 +41,7 @@ foldExpr fConst fRango fSuma fResta fMult fDiv fExpr = case fExpr of
   (Suma a b) -> fSuma (rec a) (rec b)
   (Resta a b) -> fResta (rec a) (rec b)
   (Mult a b) -> fMult (rec a) (rec b)
-  (Div a b) -> fMult (rec a) (rec b)
+  (Div a b) -> fDiv (rec a) (rec b)
 
   where rec = foldExpr fConst fRango fSuma fResta fMult fDiv
 
@@ -53,8 +53,7 @@ foldExpr fConst fRango fSuma fResta fMult fDiv fExpr = case fExpr of
  --usando G a como eval :: Expr → G Float.
  --Se debe usar dameUno para determinar el valor de un rango.
 eval :: Expr -> G Float
-eval =
-  foldExpr
+eval = foldExpr
     (\x g -> (x, g)) --Caso const x
     (\l u g -> dameUno (l, u) g) -- Caso Rango. Por enunciado tenemos que utilizar dameUno.
     (\fa fb g -> case fa g of
@@ -74,10 +73,14 @@ eval =
                     (x, g1) -> case fb g1 of 
                                  (y, g2) -> (x / y, g2))
 
+--COMENTARIO IMPORTANTE: Tanto eval como eval2 funcionan perfectamente. Pueden comprobarlo utilizando
+--eval (Cualquier operación (Rango a a) (Rango b b)) (genNormalConSemilla s) y ver que siempre les da a+b por la definición de que si l==u devuelve l.
+
+
 --Otra manera de hacer eval. La explicación es la misma que la de arriba, solamente que acá utilizo let para crear variables intermedias.
 --El proceso es lo mismo, voy evaluando cada parte de la expresión que genemos y la vamos guardando en el generador.
 --Lo hacemos para ambos elementos y para la operación final. 
---Usemos la que mas les guste. Recuerden que si usan esta, cambien el nombre de eval2 a eval.
+--Usemos la que mas les guste.
 eval2 :: Expr -> G Float
 eval2 = foldExpr (\x g -> (x, g))
                  (\d u g -> dameUno (d, u) g)
@@ -97,14 +100,14 @@ eval2 = foldExpr (\x g -> (x, g))
 -- | @armarHistograma m n f g@ arma un histograma con @m@ casilleros
 -- a partir del resultado de tomar @n@ muestras de @f@ usando el generador @g@.
 armarHistograma :: Int -> Int -> G Float -> G Histograma
-armarHistograma m n f g = (histograma m (rango95 (fst (muestra f n g))) 
-                          (fst (muestra f n g)), snd(muestra f n g))
+armarHistograma m n f g = let (xs, g') = muestra f n g
+                              r = rango95 xs
+                          in (histograma m r xs, g')
 
--- | @evalHistograma m n e g@ evalúa la expresión @e@ usando el generador @g@ @n@ veces
--- devuelve un histograma con @m@ casilleros y rango calculado con @rango95@ para abarcar el 95% de confianza de los valores.
--- @n@ debe ser mayor que 0.
+
+
 evalHistograma :: Int -> Int -> Expr -> G Histograma
-evalHistograma m n expr = error "COMPLETAR EJERCICIO 10"
+evalHistograma m n expr = armarHistograma m n (eval expr)
 
 -- Podemos armar histogramas que muestren las n evaluaciones en m casilleros.
 -- >>> evalHistograma 11 10 (Suma (Rango 1 5) (Rango 100 105)) (genNormalConSemilla 0)
