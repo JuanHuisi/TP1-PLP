@@ -42,16 +42,18 @@ vacio n (l, u) = (Histograma l u ([0 | x <- [0..n+1]]))
 --Con esto debería funcionar todo. Cualquier cosa me avisan.
 agregar :: Float -> Histograma -> Histograma
 agregar x (Histograma l u xs) =
-  let n = length xs - 2
-      tamIntervalo = (u - l) / fromIntegral n
-      indice = if x < l then 0 
-                else if x >= u then n + 1  
-                else floor ((x - l) / tamIntervalo) + 1
-  in Histograma l u (actualizarElem indice (+1) xs) 
+  let n = length xs - 2  -- número de intervalos internos. Recordemos que los rangos van desde l hasta l+u, luego lu hasta l +2u...
+      indice
+        | x < l     = 0
+        | otherwise =
+            let k = floor ((x - l) / u) + 1
+            in if k > n then n + 1 else k --Para el caso en que se pase del rango superior
+  in Histograma l u (actualizarElem indice (+1) xs)
+-- Histograma (15 20 vacio) -> (-inf, 15) [15, 35) [35, 55) [55, 75) [75, +inf)]]]
 
 -- | Arma un histograma a partir de una lista de números reales con la cantidad de casilleros y rango indicados.
 histograma :: Int -> (Float, Float) -> [Float] -> Histograma
-histograma n r xs = foldr agregar (vacio n r) xs
+histograma n r = foldr (\x acc -> agregar x acc) (vacio n r)
 
 
 -- | Un `Casillero` representa un casillero del histograma con sus límites, cantidad y porcentaje.
