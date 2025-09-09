@@ -104,8 +104,6 @@ armarHistograma m n f g = let (xs, g') = muestra f n g
                               r = rango95 xs
                           in (histograma m r xs, g')
 
-
-
 evalHistograma :: Int -> Int -> Expr -> G Histograma
 evalHistograma m n expr = armarHistograma m n (eval expr)
 
@@ -118,8 +116,18 @@ evalHistograma m n expr = armarHistograma m n (eval expr)
 
 -- | Mostrar las expresiones, pero evitando algunos paréntesis innecesarios.
 -- En particular queremos evitar paréntesis en sumas y productos anidados.
+--ghci> mostrar (Suma (Suma (Suma (Const 1) (Const 2)) (Const 3)) (Const 4))
+-- "1.0 + 2.0 + 3.0 + 4.0"
+--ghci> mostrar (Div (Suma (Rango 1 5) (Mult (Const 3) (Rango 100 105))) (Const 2))
+-- "(1.0∼5.0 + (3.0 * 100.0∼105.0)) / 2.0"
+--
 mostrar :: Expr -> String
-mostrar = error "COMPLETAR EJERCICIO 11"
+mostrar = foldExpr(\x -> show x) -- Const
+                  (\l u -> show l ++ "~" ++ show u) -- Rango
+                  (\a b -> a ++ " + " ++ b) -- Suma
+                  (\a b -> a ++ " - " ++ b) -- Resta
+                  (\a b -> maybeParen True (a ++ " * " ++ b)) -- Multiplicación. Siempre con paréntesis.
+                  (\a b -> maybeParen True (a ++ " / " ++ b)) -- División. Siempre con paréntesis.
 
 data ConstructorExpr = CEConst | CERango | CESuma | CEResta | CEMult | CEDiv
   deriving (Show, Eq)
