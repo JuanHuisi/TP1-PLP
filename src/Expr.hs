@@ -45,33 +45,6 @@ foldExpr fConst fRango fSuma fResta fMult fDiv fExpr = case fExpr of
 
   where rec = foldExpr fConst fRango fSuma fResta fMult fDiv
 
--- | Evaluar expresiones dado un generador de números aleatorios
---Definir la funci´on eval que permite obtener una posible evaluaci´on de una expresi´on dado
- --un generador de n´umeros aleatorios. No se permite recursi´on expl´ıcita.
- --El tipo deseado es eval :: Expr → Gen → (Float, Gen) para poder obtener el generador
- --resultante despu´es de generar algunos n´umeros aleatorios para evaluar los rangos. Puede escribirse
- --usando G a como eval :: Expr → G Float.
- --Se debe usar dameUno para determinar el valor de un rango.
-eval :: Expr -> G Float
-eval = foldExpr
-    (\x g -> (x, g)) --Caso const x
-    (\l u g -> dameUno (l, u) g) -- Caso Rango. Por enunciado tenemos que utilizar dameUno.
-    (\fa fb g -> case fa g of
-                    (x, g1) -> case fb g1 of
-                                 (y, g2) -> (x + y, g2)) --Caso Suma. Es bastante extenso de explicar.
-                                 -- La idea es que nosotros vamos a tener Suma fa fb, y el g va a ser nuestro gen.
-                                 -- Entonces, primero evaluo fa g para modificar el generador, y luego con el generador modificado g1 calculo fb g1. 
-                                 -- Esto lo guardo en g2, y luego devuelvo la suma con el generador g2. 
-                                 -- Basicamente esto se repite con todos los demás casos. CHEQUEAR QUE PASA EN LA DIVISIÓN SI LE PASAMOS 0.
-    (\fa fb g -> case fa g of
-                    (x, g1) -> case fb g1 of 
-                                 (y, g2) -> (x - y, g2))
-    (\fa fb g -> case fa g of
-                    (x, g1) -> case fb g1 of
-                                 (y, g2) -> (x * y, g2))
-    (\fa fb g -> case fa g of
-                    (x, g1) -> case fb g1 of 
-                                 (y, g2) -> (x / y, g2))
 
 --COMENTARIO IMPORTANTE: Tanto eval como eval2 funcionan perfectamente. Pueden comprobarlo utilizando
 --eval (Cualquier operación (Rango a a) (Rango b b)) (genNormalConSemilla s) y ver que siempre les da a+b por la definición de que si l==u devuelve l.
@@ -81,21 +54,31 @@ eval = foldExpr
 --El proceso es lo mismo, voy evaluando cada parte de la expresión que genemos y la vamos guardando en el generador.
 --Lo hacemos para ambos elementos y para la operación final. 
 --Usemos la que mas les guste.
-eval2 :: Expr -> G Float
-eval2 = foldExpr (\x g -> (x, g))
-                 (\d u g -> dameUno (d, u) g)
-                 (\x y g -> let (a, g1) = x g
-                                (b, g2) = y g1 
-                            in (a + b, g2))
-                  (\x y g -> let (a, g1) = x g
-                                 (b, g2) = y g1  
-                              in (a - b, g2))
-                    (\x y g -> let (a, g1) = x g
-                                   (b, g2) = y g1
-                              in (a * b, g2)) 
-                    (\x y g -> let (a, g1) = x g
-                                   (b, g2) = y g1
-                              in (a / b, g2)) 
+eval :: Expr -> G Float
+eval = foldExpr
+        (\x g -> (x, g)) -- Caso const x
+
+        (\d u g -> dameUno (d, u) g) -- Caso Rango d u
+
+        {-  Para estos casos, la idea es que nosotros vamos a tener Suma x y  ; y el g va a ser nuestro gen.
+        Entonces, primero evalua x g para modificar el generador, y luego con el generador modificado g1 calculo y g1. 
+        Esto lo guardo en g2, y luego devuelvo la suma con el generador g2. 
+        Basicamente esto se repite con todos los dem    -}
+        (\x y g -> let (a, g1) = x g  -- Caso suma 
+                       (b, g2) = y g1
+                   in (a + b, g2))
+
+        (\x y g -> let (a, g1) = x g  -- Caso resta 
+                       (b, g2) = y g1
+                   in (a - b, g2))
+
+        (\x y g -> let (a, g1) = x g  -- Caso mult 
+                       (b, g2) = y g1
+                   in (a * b, g2))
+
+        (\x y g -> let (a, g1) = x g  -- Caso div
+                       (b, g2) = y g1
+                   in (a / b, g2))
 
 -- | @armarHistograma m n f g@ arma un histograma con @m@ casilleros
 -- a partir del resultado de tomar @n@ muestras de @f@ usando el generador @g@.
@@ -120,14 +103,66 @@ evalHistograma m n expr = armarHistograma m n (eval expr)
 -- "1.0 + 2.0 + 3.0 + 4.0"
 --ghci> mostrar (Div (Suma (Rango 1 5) (Mult (Const 3) (Rango 100 105))) (Const 2))
 -- "(1.0∼5.0 + (3.0 * 100.0∼105.0)) / 2.0"
---
+
+
+-- uso recr porque necesito las expresiones originales, para saber su constructor y decidir en funcion de el si lleva parentesis.
 mostrar :: Expr -> String
-mostrar = foldExpr(\x -> show x) -- Const
-                  (\l u -> show l ++ "~" ++ show u) -- Rango
-                  (\a b -> a ++ " + " ++ b) -- Suma
-                  (\a b -> a ++ " - " ++ b) -- Resta
-                  (\a b -> maybeParen True (a ++ " * " ++ b)) -- Multiplicación. Siempre con paréntesis.
-                  (\a b -> maybeParen True (a ++ " / " ++ b)) -- División. Siempre con paréntesis.
+mostrar = recrExpr (\x -> show x) -- Const
+                   (\l u -> show l ++ "~" ++ show u) -- Rango
+
+                   (\exprA strA exprB strB ->
+                     let parentesisA = case constructor exprA of
+                           CEResta -> True
+                           CEMult -> True
+                           CEDiv -> True
+                           _ -> False
+                         parentesisB = case constructor exprB of
+                          CEResta -> True
+                          CEMult -> True
+                          CEDiv -> True
+                          _ -> False
+                     in maybeParen parentesisA strA ++ " + " ++ maybeParen parentesisB strB) -- Suma
+                   
+                   (\exprA strA exprB strB -> 
+                     let parentesisA = case constructor exprA of
+                           CEResta -> True
+                           CESuma -> True
+                           _ -> False
+                         parentesisB = case constructor exprB of
+                           CEResta -> True
+                           CESuma -> True
+                           _ -> False
+                     in maybeParen parentesisA strA ++ " - " ++ maybeParen parentesisB strB) -- Resta
+
+                   (\exprA strA exprB strB -> 
+                     let parentesisA = case constructor exprA of
+                           CEResta -> True
+                           CESuma -> True
+                           CEDiv -> True
+                           _ -> False
+                         parentesisB = case constructor exprB of
+                          CEResta -> True
+                          CESuma -> True
+                          CEDiv -> True
+                          _ -> False
+                     in maybeParen parentesisA strA ++ " * " ++ maybeParen parentesisB strB) -- Multiplicación.
+
+                   (\exprA strA exprB strB -> 
+                     let parentesisA = case constructor exprA of
+                           CEResta -> True
+                           CESuma -> True
+                           _ -> False
+                     in maybeParen parentesisA strA ++ " / " ++ strB) -- División.
+
+
+-- parentesis si es suma con algo que no es suma 
+-- parentesis si es mult con algo que no es mult 
+-- no parentesis si es const  
+-- no parentesis si rango 
+-- parentesis si izq en division es suma o resta
+-- parentesis en resta si son sumas o restas 
+
+
 
 data ConstructorExpr = CEConst | CERango | CESuma | CEResta | CEMult | CEDiv
   deriving (Show, Eq)
