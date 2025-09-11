@@ -43,10 +43,11 @@ vacio n (l, u) = (Histograma l u ([0 | x <- [0..n+1]]))
 agregar :: Float -> Histograma -> Histograma
 agregar x (Histograma l u xs) =
   let n = length xs - 2  -- número de intervalos internos. Recordemos que los rangos van desde l hasta l+u, luego lu hasta l +2u...
+      tamIntervalo = (u - l) / fromIntegral n
       indice
         | x < l     = 0
         | otherwise =
-            let k = floor ((x - l) / u) + 1
+            let k = floor ((x - l) / tamIntervalo) + 1
             in if k > n then n + 1 else k --Para el caso en que se pase del rango superior
   in Histograma l u (actualizarElem indice (+1) xs)
 -- Histograma (15 20 vacio) -> (-inf, 15) [15, 35) [35, 55) [55, 75) [75, +inf)]]]

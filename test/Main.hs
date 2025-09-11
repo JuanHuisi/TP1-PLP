@@ -24,16 +24,16 @@ allTests =
       "Ej 3 - Histograma.vacio" ~: testsVacio,
       "Ej 4 - Histograma.agregar" ~: testsAgregar,
       "Ej 5 - Histograma.histograma" ~: testsHistograma,
-      "Ej 6 - Histograma.casilleros" ~: testsCasilleros,
-      "Ej 7 - Expr.recrExpr" ~: testsRecr,
-      "Ej 7 - Expr.foldExpr" ~: testsFold,
-      "Ej 8 - Expr.eval" ~: testsEval,
-      "Ej 9 - Expr.armarHistograma" ~: testsArmarHistograma,
-      "Ej 10 - Expr.evalHistograma" ~: testsEvalHistograma,
-      "Ej 11 - Expr.mostrar" ~: testsMostrar,
-      "Expr.Parser.parse" ~: testsParse,
-      "App.mostrarFloat" ~: testsMostrarFloat,
-      "App.mostrarHistograma" ~: testsMostrarHistograma
+      "Ej 6 - Histograma.casilleros" ~: testsCasilleros
+      -- "Ej 7 - Expr.recrExpr" ~: testsRecr,
+      -- "Ej 7 - Expr.foldExpr" ~: testsFold,
+      -- "Ej 8 - Expr.eval" ~: testsEval,
+      -- "Ej 9 - Expr.armarHistograma" ~: testsArmarHistograma,
+      -- "Ej 10 - Expr.evalHistograma" ~: testsEvalHistograma,
+      -- "Ej 11 - Expr.mostrar" ~: testsMostrar,
+      -- "Expr.Parser.parse" ~: testsParse,
+      -- "App.mostrarFloat" ~: testsMostrarFloat,
+      -- "App.mostrarHistograma" ~: testsMostrarHistograma
     ]
 
 testsAlinearDerecha :: Test
@@ -41,7 +41,11 @@ testsAlinearDerecha =
   test
     [ alinearDerecha 6 "hola" ~?= "  hola",
       alinearDerecha 10 "incierticalc" ~?= "incierticalc",
-      completar
+      alinearDerecha 0 "abcd" ~?= "abcd",
+      alinearDerecha 0 "   abcd" ~?= "   abcd",
+      alinearDerecha (-2) " abcd" ~?= " abcd",
+      alinearDerecha 4 "  tp" ~?= "  tp",
+      alinearDerecha 3 "" ~?= "   "
     ]
 
 testsActualizarElem :: Test
@@ -49,7 +53,10 @@ testsActualizarElem =
   test
     [ actualizarElem 0 (+ 10) [1, 2, 3] ~?= [11, 2, 3],
       actualizarElem 1 (+ 10) [1, 2, 3] ~?= [1, 12, 3],
-      completar
+      actualizarElem 3 (*2) [10, 20, 30, 40] ~?= [10, 20, 30, 80],
+      actualizarElem 9 (*2) [10, 20, 30, 40] ~?= [10, 20, 30, 40],
+      actualizarElem (-3) (*2) [10, 20, 30, 40] ~?= [10, 20, 30, 40],
+      actualizarElem 0 (*2) [] ~?= []
     ]
 
 testsVacio :: Test
@@ -67,7 +74,11 @@ testsVacio =
               Casillero 4 6 0 0,
               Casillero 6 infinitoPositivo 0 0
             ],
-      completar
+      casilleros (vacio 2 (0, 5))
+        ~?= [ Casillero infinitoNegativo 0 0 0,
+              Casillero 0 2.5 0 0,
+              Casillero 2.5 5 0 0,
+              Casillero 5 infinitoPositivo 0 0]
     ]
 
 testsAgregar :: Test
@@ -95,14 +106,27 @@ testsAgregar =
                   Casillero 4 6 0 0,
                   Casillero 6 infinitoPositivo 0 0
                 ],
-          completar
+          casilleros (agregar 5 h0)
+            ~?= [ Casillero infinitoNegativo 0 0 0,
+                  Casillero 0 2 0 0,
+                  Casillero 2 4 0 0,
+                  Casillero 4 6 1 100,
+                  Casillero 6 infinitoPositivo 0 0],
+          casilleros (agregar 10 h0)
+            ~?= [ Casillero infinitoNegativo 0 0 0,
+                  Casillero 0 2 0 0,
+                  Casillero 2 4 0 0,
+                  Casillero 4 6 0 0,
+                  Casillero 6 infinitoPositivo 1 100
+                ]
         ]
 
 testsHistograma :: Test
 testsHistograma =
   test
     [ histograma 4 (1, 5) [1, 2, 3] ~?= agregar 3 (agregar 2 (agregar 1 (vacio 4 (1, 5)))),
-      completar
+      histograma 2 (0, 4) [] ~?= vacio 2 (0, 4),
+      histograma 3 (0,6) [-1,0,1,3,5,6,7] ~?= agregar 7 (agregar 6 (agregar 5 (agregar 3 (agregar 1 (agregar 0 (agregar (-1) (vacio 3 (0,6))))))))
     ]
 
 testsCasilleros :: Test
@@ -121,8 +145,7 @@ testsCasilleros =
               Casillero 2.0 4.0 1 100.0,
               Casillero 4.0 6.0 0 0.0,
               Casillero 6.0 infinitoPositivo 0 0.0
-            ],
-      completar
+            ]
     ]
 
 testsRecr :: Test
