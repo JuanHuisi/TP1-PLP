@@ -1,0 +1,40 @@
+Demostremos por inducción estructural sobre la estructura de Expr
+que la siguiente expresión es válida ∀x :: Expr. cantLit x = S (cantOp x)
+
+Definimos el predicado: ∀x:: Expr. P(x): cantLit x = S (cantOp x)
+
+Casos base
+∀a :: Float.  P(Const a): 
+    
+        cantLit (Const a)   = S (cantOp (Const a))
+={L1}  S Z            = S (cantOp (Const a))
+={O1}  S Z            = S Z 
+    
+    como queríamos probar.
+    
+∀a,b:: Float. P(Rango a b):
+qvq: cantLit (Rango a b) = S (cantOp (Rango a b)).
+
+cantLit (Rango a b) = {L2} S Z = {O2} S (cantOp (Rango a b)).
+
+Llegamos al otro lado del igual que queriamos probar por lo tanto
+vale P(Rango a b) para todo a,b::Float
+
+Paso Inductivo: Asumimos  que ∀a,b::Expr. vale P(a) && P(b). 
+    Y qvq vale (P(Suma a b)).
+
+    HI cantLit a = S (cantOp a) && cantLit b = S (cantOp b)
+    TI cantLit (Suma a b) = S (cantOp (Suma a b))
+    
+        cantLit (Suma a b) = S (cantOp (Suma a b))
+={L3}  suma (cantLit a) (cantLit b) = S (cantOp (Suma a b))
+={HI}  suma (S (cantOp a)) (S (cantOp b)) = S (cantOp (Suma a b))
+={S2}  S ( suma (cantOp a) (S (cantOp b)) ) = S (cantOp (Suma a b))
+={CONMUT} S ( suma (S (cantOp b) ) (cantOp a) ) = S (cantOp (Suma a b))
+={S2}  S ( S ( suma (cantOp b) (cantOp a) ) ) = S (cantOp (Suma a b))
+
+=> Por propiedades de los enteros (S a) = (S b) <=> a = b, por lo tanto podemos simplificar una S de cada lado de la ecuación.
+
+=      S ( suma (cantOp b) (cantOp a) ) = cantOp (Suma a b)
+={O3}  S ( suma (cantOp b) (cantOp a))  =  S (suma (cantOp a) (cantOp b) )
+={CONMUT} S ( suma (cantOp a) (cantOp b) ) = S (suma (cantOp a) (cantOp b) )
