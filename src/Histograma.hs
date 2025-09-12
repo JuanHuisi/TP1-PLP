@@ -31,8 +31,10 @@ data Histograma = Histograma Float Float [Int]
 -- | Inicializa un histograma vacío con @n@ casilleros para representar
 -- valores en el rango y 2 casilleros adicionales para los valores fuera del rango.
 -- Require que @l < u@ y @n >= 1@.
+
+--vacio 3 (0,6) -> (-inf,0),[0,2),[2,4),[4,6),[6,inf)
 vacio :: Int -> (Float, Float) -> Histograma
-vacio n (l, u) = (Histograma l u ([0 | x <- [0..n+1]]))
+vacio n (l, u) = (Histograma l ((u-l)/ (fromIntegral n)) ([0 | x <- [1..n+2]]))
 
 -- | Agrega un valor al histograma.
 -- Pido perdón por el abuso de let pero realmente es muy útil. 
@@ -43,11 +45,10 @@ vacio n (l, u) = (Histograma l u ([0 | x <- [0..n+1]]))
 agregar :: Float -> Histograma -> Histograma
 agregar x (Histograma l u xs) =
   let n = length xs - 2  -- número de intervalos internos. Recordemos que los rangos van desde l hasta l+u, luego lu hasta l +2u...
-      tamIntervalo = (u - l) / fromIntegral n
       indice
         | x < l     = 0
         | otherwise =
-            let k = floor ((x - l) / tamIntervalo) + 1
+            let k = floor ((x - l) / u) + 1
             in if k > n then n + 1 else k --Para el caso en que se pase del rango superior
   in Histograma l u (actualizarElem indice (+1) xs)
 -- Histograma (15 20 vacio) -> (-inf, 15) [15, 35) [35, 55) [55, 75) [75, +inf)]]]
@@ -87,10 +88,10 @@ casilleros h = zipWith4 Casillero
                       (auxCasPor h)
 
 auxCasMin :: Histograma -> [Float]
-auxCasMin (Histograma l u xs) =  [infinitoNegativo] ++ [(l + fromIntegral x * u) / ( fromIntegral (length xs) - 2) | x <- [0..(length xs - 2)]]
+auxCasMin (Histograma l u xs) =  [infinitoNegativo] ++ [(l + fromIntegral x * u) | x <- [0..(length xs - 2)]]
 
 auxCasMax :: Histograma -> [Float]
-auxCasMax (Histograma l u xs) =  [(l + fromIntegral x * u) / ( fromIntegral (length xs) - 2) | x <- [0..(length xs - 2)]] ++ [infinitoPositivo]
+auxCasMax (Histograma l u xs) =  [(l + fromIntegral x * u)| x <- [0..(length xs - 2)]] ++ [infinitoPositivo]
 
 auxCascant :: Histograma -> [Int]
 auxCascant (Histograma l u xs) = xs
