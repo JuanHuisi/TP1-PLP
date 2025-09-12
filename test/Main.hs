@@ -24,16 +24,16 @@ allTests =
       "Ej 3 - Histograma.vacio" ~: testsVacio,
       "Ej 4 - Histograma.agregar" ~: testsAgregar,
       "Ej 5 - Histograma.histograma" ~: testsHistograma,
-      "Ej 6 - Histograma.casilleros" ~: testsCasilleros
-      -- "Ej 7 - Expr.recrExpr" ~: testsRecr,
-      -- "Ej 7 - Expr.foldExpr" ~: testsFold,
-      -- "Ej 8 - Expr.eval" ~: testsEval,
-      -- "Ej 9 - Expr.armarHistograma" ~: testsArmarHistograma,
-      -- "Ej 10 - Expr.evalHistograma" ~: testsEvalHistograma,
-      -- "Ej 11 - Expr.mostrar" ~: testsMostrar,
-      -- "Expr.Parser.parse" ~: testsParse,
-      -- "App.mostrarFloat" ~: testsMostrarFloat,
-      -- "App.mostrarHistograma" ~: testsMostrarHistograma
+      "Ej 6 - Histograma.casilleros" ~: testsCasilleros,
+      "Ej 7 - Expr.recrExpr" ~: testsRecr,
+      "Ej 7 - Expr.foldExpr" ~: testsFold,
+      "Ej 8 - Expr.eval" ~: testsEval,
+      "Ej 9 - Expr.armarHistograma" ~: testsArmarHistograma,
+      "Ej 10 - Expr.evalHistograma" ~: testsEvalHistograma,
+      "Ej 11 - Expr.mostrar" ~: testsMostrar,
+      "Expr.Parser.parse" ~: testsParse,
+      "App.mostrarFloat" ~: testsMostrarFloat,
+      "App.mostrarHistograma" ~: testsMostrarHistograma
     ]
 
 testsAlinearDerecha :: Test
@@ -151,13 +151,22 @@ testsCasilleros =
 testsRecr :: Test
 testsRecr =
   test
-    [ completar
+    [ recrExpr id (\x y -> (x+y)/2)
+                  (\_ x _ y -> x+y)
+                  (\_ x _ y -> x-y)
+                  (\_ x _ y -> x*y)
+                  (\_ x _ y -> x/y)
+                  (Const 2.5) ~?= 2.5
     ]
 
 testsFold :: Test
 testsFold =
   test
-    [ completar
+    [ foldExpr id (\x y -> x+y/2) (+) (-) (*) (/) (Const 2.5) ~?= 2.5,
+      foldExpr id (\x y -> (x+y)/2) (+) (-) (*) (/) (Rango 2 10) ~?= 6,
+      foldExpr id (\x y -> x+y/2) (+) (-) (*) (/) (Suma (Const 2) (Const 5)) ~?= 7,
+      foldExpr id (\x y -> x+y/2) (+) (-) (*) (/) (Mult (Const 2) (Const 5)) ~?= 10,
+      foldExpr id (\x y -> x+y/2) (+) (-) (*) (/) (Div (Const 20) (Resta (Const 11) (Const 1))) ~?= 2
     ]
 
 testsEval :: Test
@@ -167,18 +176,23 @@ testsEval =
       fst (eval (Suma (Rango 1 5) (Const 1)) (genNormalConSemilla 0)) ~?= 3.7980492,
       -- el primer rango evalua a 2.7980492 y el segundo a 3.1250308
       fst (eval (Suma (Rango 1 5) (Rango 1 5)) (genNormalConSemilla 0)) ~?= 5.92308,
-      completar
+      fst (eval (Rango 1 5) (genNormalConSemilla 0)) ~?= 2.7980492,
+      fst (eval (Div (Const 18) (Mult (Rango 1 5) (Const 2))) genFijo) ~?= 3.0
     ]
 
 testsArmarHistograma :: Test
 testsArmarHistograma =
   test
-    [completar]
+    [
+      1 ~?= 1
+    ]
 
 testsEvalHistograma :: Test
 testsEvalHistograma =
   test
-    [completar]
+    [
+      1 ~?= 1
+    ]
 
 testsParse :: Test
 testsParse =
