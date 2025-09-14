@@ -33,7 +33,7 @@ Paso Inductivo: Asumimos  que ∀a,b::Expr. vale P(a) && P(b).
 ={CONMUT} S ( suma (S (cantOp b) ) (cantOp a) ) = S (cantOp (Suma a b))
 ={S2}  S ( S ( suma (cantOp b) (cantOp a) ) ) = S (cantOp (Suma a b))
 
-=> Por propiedades de los enteros (S a) = (S b) <=> a = b, por lo tanto podemos simplificar una S de cada lado de la ecuación.
+=> Por inyectividad de S en el tipo Nat (S a) = (S b) <=> a = b, por lo tanto podemos simplificar una S de cada lado de la ecuación.
 
 =      S ( suma (cantOp b) (cantOp a) ) = cantOp (Suma a b)
 ={O3}  S ( suma (cantOp b) (cantOp a))  =  S (suma (cantOp a) (cantOp b) )
