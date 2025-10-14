@@ -34,7 +34,7 @@ data Histograma = Histograma Float Float [Int]
 
 --vacio 3 (0,6) -> (-inf,0),[0,2),[2,4),[4,6),[6,inf)
 vacio :: Int -> (Float, Float) -> Histograma
-vacio n (l, u) = (Histograma l ((u-l)/ (fromIntegral n)) ([0 | x <- [1..n+2]]))
+vacio n (l, u) = Histograma l ((u-l)/ (fromIntegral n)) (replicate (n+2) 0)
 
 -- | Agrega un valor al histograma.
 -- Pido perdón por el abuso de let pero realmente es muy útil. 
@@ -55,7 +55,7 @@ agregar x (Histograma l u xs) =
 
 -- | Arma un histograma a partir de una lista de números reales con la cantidad de casilleros y rango indicados.
 histograma :: Int -> (Float, Float) -> [Float] -> Histograma
-histograma n r = foldr (\x acc -> agregar x acc) (vacio n r)
+histograma n r = foldr agregar (vacio n r)
 
 
 -- | Un `Casillero` representa un casillero del histograma con sus límites, cantidad y porcentaje.
@@ -82,24 +82,22 @@ casPorcentaje (Casillero _ _ _ p) = p
 -- | Dado un histograma, devuelve la lista de casilleros con sus límites, cantidad y porcentaje.
 casilleros :: Histograma -> [Casillero]
 casilleros h = zipWith4 Casillero
-                      (auxCasMin h)
-                      (auxCasMax h)
-                      (auxCascant h)
-                      (auxCasPor h)
+                      (casMin h)
+                      (casMax h)
+                      (casCant h)
+                      (casPor h)
+  where
+    casMin :: Histograma -> [Float]
+    casMin (Histograma l u xs) = [infinitoNegativo] ++ [(l + fromIntegral x * u) | x <- [0..(length xs - 2)]]
 
-auxCasMin :: Histograma -> [Float]
-auxCasMin (Histograma l u xs) =  [infinitoNegativo] ++ [(l + fromIntegral x * u) | x <- [0..(length xs - 2)]]
+    casMax :: Histograma -> [Float]
+    casMax (Histograma l u xs) = [(l + fromIntegral x * u)| x <- [0..(length xs - 2)]] ++ [infinitoPositivo]
 
-auxCasMax :: Histograma -> [Float]
-auxCasMax (Histograma l u xs) =  [(l + fromIntegral x * u)| x <- [0..(length xs - 2)]] ++ [infinitoPositivo]
+    casCant :: Histograma -> [Int]
+    casCant (Histograma l u xs) = xs
 
-auxCascant :: Histograma -> [Int]
-auxCascant (Histograma l u xs) = xs
-
-auxCasPor :: Histograma -> [Float] --Chicos recuerden que tiene que dar 0.0, no NaN. Utilizo Let-in para poder chequear
---si el valor actual suma 0(NaN) y en ese caso devolver 0.0
-auxCasPor (Histograma l u xs) = foldr (\x acc -> 
-        let total = sum xs
-            val = if total == 0 then 0 else (fromIntegral x / fromIntegral total) * 100
-        in val : acc
-      ) [] xs
+    casPor :: Histograma -> [Float]
+    casPor (Histograma l u xs) =
+      let total = sum xs
+      in map (\x -> if total == 0 then 0 else (fromIntegral x / fromIntegral total) * 100) xs
+  

@@ -5,7 +5,7 @@ module Util where
 -- Si @s@ ya tiene longitud @>= n@, devuelve @s@.
 alinearDerecha :: Int -> String -> String
 alinearDerecha n s = if length s >= n then s 
-                                        else take (n - length s) (repeat ' ') ++ s
+                                        else replicate (n - length s) ' ' ++ s
 
 -- | Dado un índice y una función, actualiza el elemento en la posición del índice
 -- aplicando la función al valor actual. Si el índice está fuera de los límites
