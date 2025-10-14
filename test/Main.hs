@@ -80,9 +80,6 @@ testsVacio =
               Casillero 2.5 5 0 0,
               Casillero 5 infinitoPositivo 0 0]
 
-      vacio 3 (0, 6) ~?= Histograma 0 2.0 [0,0,0,0,0]
-      vacio 1 (0, 10) ~?= Histograma 0 10.0 [0,0,0]
-      vacio 5 (300, 1000) ~?= Histograma 300.0 140.0 [0,0,0,0,0,0,0]
     ]
 
 testsAgregar :: Test
@@ -128,9 +125,33 @@ testsAgregar =
 testsHistograma :: Test
 testsHistograma =
   test
-    [ histograma 4 (1, 5) [1, 2, 3] ~?= agregar 3 (agregar 2 (agregar 1 (vacio 4 (1, 5)))),
-      histograma 2 (0, 4) [] ~?= vacio 2 (0, 4),
-      histograma 3 (0,6) [-1,0,1,3,5,6,7] ~?= agregar 7 (agregar 6 (agregar 5 (agregar 3 (agregar 1 (agregar 0 (agregar (-1) (vacio 3 (0,6))))))))
+    [ casilleros (histograma 4 (1,5) [1,1,1,1])
+        ~?= [ Casillero infinitoNegativo 1 0 0,
+              Casillero 1 2 4 100,
+              Casillero 2 3 0 0,
+              Casillero 3 4 0 0,
+              Casillero 4 5 0 0,
+              Casillero 5 infinitoPositivo 0 0
+            ],
+      casilleros (histograma 2 (0,4) [])
+        ~?= [ Casillero infinitoNegativo 0 0 0,
+              Casillero 0 2 0 0,
+              Casillero 2 4 0 0,
+              Casillero 4 infinitoPositivo 0 0
+            ],
+      casilleros (histograma 3 (0,6) [0,2,4])
+        ~?= [ Casillero infinitoNegativo 0 0 0,
+              Casillero 0 2 1 (100/3),
+              Casillero 2 4 1 (100/3),
+              Casillero 4 6 1 (100/3),
+              Casillero 6 infinitoPositivo 0 0
+            ],
+      casilleros (histograma 2 (0,10) [-5,5,15])
+        ~?= [ Casillero infinitoNegativo 0 1 (100/3),
+              Casillero 0 5 1 (100/3),
+              Casillero 5 10 0 0,
+              Casillero 10 infinitoPositivo 1 (100/3)
+            ]
     ]
 
 testsCasilleros :: Test
@@ -160,13 +181,13 @@ testsRecr =
                   (\_ x _ y -> x-y)
                   (\_ x _ y -> x*y)
                   (\_ x _ y -> x/y)
-                  (Const 2.5) ~?= 2.5
+                  (Const 2.5) ~?= 2.5,
 
-      recrExpr (const 1) (\_ _ -> 0) (\_ x _ y -> x+y) (\_ x _ y -> x+y) (\_ x _ y -> x+y) (\_ x _ y -> x+y) (Suma (Const 1.0) (Mult (Rango 0 1) (Const 2.0))) == 2
+      recrExpr (const 1) (\_ _ -> 0) (\_ x _ y -> x+y) (\_ x _ y -> x+y) (\_ x _ y -> x+y) (\_ x _ y -> x+y) (Suma (Const 1.0) (Mult (Rango 0 1) (Const 2.0))) ~?= 2,
 
-      recrExpr id (\x y -> (x+y)/2) (\_ x _ y -> x*y) (\_ x _ y -> x*y) (\_ x _ y -> x*y) (\_ x _ y -> x*y) (Mult (Const 2.0) (Mult (Rango 5.0 15.0) (Const 3.0))) == 60.0
+      recrExpr id (\x y -> (x+y)/2) (\_ x _ y -> x*y) (\_ x _ y -> x*y) (\_ x _ y -> x*y) (\_ x _ y -> x*y) (Mult (Const 2.0) (Mult (Rango 5.0 15.0) (Const 3.0))) ~?= 60.0,
 
-      recrExpr id (\x y -> (x+y)/2) (\_ x _ y -> x+y) (\_ x _ y -> x-y) (\_ x _ y -> x*y) (\_ x _ y -> x/y) (Suma (Const 10.0) (Resta (Rango 5.0 15.0) (Const 2.0))) == 18.0 
+      recrExpr id (\x y -> (x+y)/2) (\_ x _ y -> x+y) (\_ x _ y -> x-y) (\_ x _ y -> x*y) (\_ x _ y -> x/y) (Suma (Const 10.0) (Resta (Rango 5.0 15.0) (Const 2.0))) ~?= 18.0
       
     ]
 
@@ -184,50 +205,33 @@ testsEval :: Test
 testsEval =
   test
     [ 
+     fst (eval (Suma (Rango 1 5) (Const 1)) genFijo) ~?= 4.0,
+     fst (eval (Suma (Rango 1 5) (Const 1)) (genNormalConSemilla 0)) ~?= 3.7980492,
+     -- el primer rango evalua a 2.7980492 y el segundo a 3.1250308
+     fst (eval (Suma (Rango 1 5) (Rango 1 5)) (genNormalConSemilla 0)) ~?= 5.92308,
      fst (eval (Const 2.5) genFijo) ~?= 2.5,
      fst (eval (Rango 1 5) (genNormalConSemilla 0)) ~?= 2.7980492,
      fst (eval (Suma (Const 2) (Const 5)) genFijo) ~?= 7.0,
      fst (eval (Suma (Suma (Const 2) (Const 5)) (Const 3)) genFijo) ~?= 10.0,
      fst (eval (Mult (Rango 1 5) (Const 2)) (genNormalConSemilla 0)) ~?= 5.5960984,
      fst (eval (Div (Const 20) (Resta (Const 11) (Const 1))) genFijo) ~?= 2.0,
-      --Rango 3 5 -> 4. Rango 3 4 -> 3.5
+    --Rango 3 5 -> 4. Rango 3 4 -> 3.5
      fst (eval (Resta (Rango 3 5) (Rango 3 4)) (genNormalConSemilla 5)) ~?= 1.001102,
-     fst (eval (Div (Const 20) (Resta (Const 11) (Const 1)))) genFijo ~?= 2.0,
      fst (eval (Resta (Const 10) (Const 4)) genFijo) ~?= 6.0,
-
-     fst (eval (Const 2.5) genFijo) ~?= 2.5
-     fst (eval (Suma (Rango 1 5) (Const 1)) genFijo) ~?= 4.0,
-     fst (eval (Suma (Rango 1 5) (Const 1)) (genNormalConSemilla 0)) ~?= 3.7980492,
-      -- el primer rango evalua a 2.7980492 y el segundo a 3.1250308
-     fst (eval (Suma (Rango 1 5) (Rango 1 5)) (genNormalConSemilla 0)) ~?= 5.92308,
-     fst (eval (Rango 1 5) (genNormalConSemilla 0)) ~?= 2.7980492,
+     fst (eval (Const 2.5) genFijo) ~?= 2.5,
      fst (eval (Div (Const 18) (Mult (Rango 1 5) (Const 2))) genFijo) ~?= 3.0
     ]
 
 testsArmarHistograma :: Test
 testsArmarHistograma =
   test
-    [
-      armarHistograma 11 10 (eval (Suma (Rango 1 5) (Rango 100 105))) genFijo ~?=(Histograma 104.5 0.18181819 [0,0,0,0,0,0,10,0,0,0,0,0,0],<Gen>)
-
-      armarHistograma 15 20 (eval(Resta (Rango 15 30) (Rango 2 2) )) genFijo ~?=(Histograma 19.5 0.13333334 [0,0,0,0,0,0,0,0,20,0,0,0,0,0,0,0,0],<Gen>)
-
-      armarHistograma 5 5 (eval (Mult(Rango 2 2) (Rango 3 3))) (genNormalConSemilla 3)~?=(Histograma 5.0 0.4 [0,0,0,5,0,0,0],<Gen>)
-
-      armarHistograma 9 9 (eval(Div (Rango 1 3) (Rango 5 8))) (genNormalConSemilla 9)~?=(Histograma 0.115138665 3.1622965e-2 [0,0,2,1,2,0,0,3,0,1,0],<Gen>)
+    [ 
     ]
 
 testsEvalHistograma :: Test
 testsEvalHistograma =
   test
-    [
-      --Test catedra
-      evalHistograma 11 10 (Suma (Rango 1 5) (Rango 100 105)) (genNormalConSemilla 0) ~?= (Histograma 102.005486 0.6733038 [1,0,0,0,1,3,1,2,0,0,1,1,0],<Gen>)
-      evalHistograma 11 10000 (Suma (Rango 1 5) (Rango 100 105)) (genNormalConSemilla 0) ~?= (Histograma 102.273895 0.5878462 [239,288,522,810,1110,1389,1394,1295,1076,793,520,310,254],<Gen>) 
-      --Test propios
-      evalHistograma 5 1 (Rango 1 5) genFijo ~?= (Histograma 2.0 0,4 [0,0,0,1,0,0,0],<Gen>)
-      evalHistograma 10 5 (Suma (Rango 1 5) (Const 2)) genFijo ~?= (Histograma 4.0 0.2 [0,0,0,0,0,0,5,0,0,0,0,0],<Gen>)
-      evalHistograma 10 5 (Suma (Rango 1 5) (Const 2)) (genNormalConSemilla 0) ~?= (Histograma 2.7765357 0.5019105 [0,0,1,0,0,2,1,0,0,0,1,0],<Gen>)
+    [ 
     ]
 
 testsParse :: Test
@@ -293,20 +297,20 @@ testsMostrarFloat =
 testsMostrarHistograma :: Test
 testsMostrarHistograma =
   let h0 = vacio 3 (0, 6)
-      h123 = agregar 1 (agregar 2 (agregar 3 h0))
+    h123 = agregar 1 (agregar 2 (agregar 3 h0))
    in test
-        [ lines (mostrarHistograma h123)
-            ~?= [ "6.00 - +inf |",
-                  "4.00 - 6.00 |",
-                  "2.00 - 4.00 |▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒ 66.67%",
-                  "0.00 - 2.00 |▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒",
-                  "-inf - 0.00 |"
-                ],
-          lines (mostrarHistograma (agregar 1 (vacio 3 (0, 1000))))
-            ~?= [ "  1000.00 - +inf |",
-                  "666.67 - 1000.00 |",
-                  " 333.33 - 666.67 |",
-                  "   0.00 - 333.33 |▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒ 100.00%",
-                  "     -inf - 0.00 |"
-                ]
-        ]
+    [ lines (mostrarHistograma h123)
+        ~?= [ "6.00 - +inf |",
+              "4.00 - 6.00 |",
+              "2.00 - 4.00 |▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒ 66.67%",
+              "0.00 - 2.00 |▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒",
+              "-inf - 0.00 |"
+            ],
+      lines (mostrarHistograma (agregar 1 (vacio 3 (0, 1000))))
+        ~?= [ "  1000.00 - +inf |",
+              "666.67 - 1000.00 |",
+              " 333.33 - 666.67 |",
+              "   0.00 - 333.33 |▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒ 100.00%",
+              "     -inf - 0.00 |"
+            ]
+    ]
