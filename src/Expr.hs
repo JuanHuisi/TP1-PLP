@@ -30,11 +30,11 @@ recrExpr fConst fRango fSuma fResta fMult fDiv fExpr = case fExpr of
   Resta a b -> fResta a (recR a) b (recR b)
   Mult a b -> fMult a (recR a) b (recR b)
   Div a b -> fDiv a (recR a) b (recR b)
-  
+
   where recR = recrExpr fConst fRango fSuma fResta fMult fDiv
 
 
-foldExpr :: (Float -> a) -> (Float -> Float -> a) -> (a -> a -> a) -> (a -> a -> a) -> (a -> a -> a) -> (a -> a -> a) -> Expr -> a 
+foldExpr :: (Float -> a) -> (Float -> Float -> a) -> (a -> a -> a) -> (a -> a -> a) -> (a -> a -> a) -> (a -> a -> a) -> Expr -> a
 foldExpr fConst fRango fSuma fResta fMult fDiv fExpr = case fExpr of
   Const x -> fConst x
   Rango x y -> fRango x y
@@ -50,22 +50,23 @@ foldExpr fConst fRango fSuma fResta fMult fDiv fExpr = case fExpr of
 -- Lo hacemos para ambos elementos y para la operación final. 
 eval :: Expr -> G Float
 eval = foldExpr
-        (,) -- Caso Const x
-        (\d u g -> dameUno (d, u) g) -- Caso Rango x y
+        (\x g -> (x, g))                 -- Caso Const x
+        (\d u -> dameUno (d, u))         -- Caso Rango x y
 
-        {-  Para estos casos, la idea es que nosotros vamos a tener Suma x y ademas el g va a ser nuestro gen.
-        Entonces, primero evalua x g para modificar el generador, y luego con el generador modificado g1, calculo y g1. 
-        Esto lo guardo en g2, y luego devuelvo la suma con el generador g2. 
-        Basicamente esto se repite con todos los demas.    -}
-        fAux (+)  -- Caso suma 
-        fAux (-)  -- Caso resta
-        fAux (*)  -- Caso mult
-        fAux (/)  -- Caso div
+        {-  Para estos casos, la idea es que vamos a tener Suma x y y además g será nuestro gen.
+            Primero evaluamos x g para obtener (a, g1), luego y g1 para (b, g2),
+            y finalmente combinamos con la operación y devolvemos g2. -}
+        (fAux (+))  -- Caso suma 
+        (fAux (-))  -- Caso resta
+        (fAux (*))  -- Caso mult
+        (fAux (/))  -- Caso div
 
-    where
-      fAux operacion = (\x y g -> let (a, g1) = x g
-                                      (b, g2) = y g1
-                                  in (operacion a b, g2))
+  where
+    fAux operacion x y g = let (a, g1) = x g
+                               (b, g2) = y g1
+                           in (operacion a b, g2)
+
+
 
 -- | @armarHistograma m n f g@ arma un histograma con @m@ casilleros
 -- a partir del resultado de tomar @n@ muestras de @f@ usando el generador @g@.
@@ -122,7 +123,7 @@ mostrar = recrExpr
             -- si el constructor del Expr esta en la lista, pone parentesis
             lleva_parent :: [ConstructorExpr] -> Expr -> String -> String
             lleva_parent cs e s = maybeParen (constructor e `elem` cs) s
-    
+
 
 
 

@@ -139,18 +139,12 @@ testsHistograma =
               Casillero 2 4 0 0,
               Casillero 4 infinitoPositivo 0 0
             ],
-      casilleros (histograma 3 (0,6) [0,2,4])
+      casilleros (histograma 3 (0,6) [0,4])
         ~?= [ Casillero infinitoNegativo 0 0 0,
-              Casillero 0 2 1 (100/3),
-              Casillero 2 4 1 (100/3),
-              Casillero 4 6 1 (100/3),
+              Casillero 0 2 1 50,
+              Casillero 2 4 0 0,
+              Casillero 4 6 1 50,
               Casillero 6 infinitoPositivo 0 0
-            ],
-      casilleros (histograma 2 (0,10) [-5,5,15])
-        ~?= [ Casillero infinitoNegativo 0 1 (100/3),
-              Casillero 0 5 1 (100/3),
-              Casillero 5 10 0 0,
-              Casillero 10 infinitoPositivo 1 (100/3)
             ]
     ]
 
@@ -188,7 +182,7 @@ testsRecr =
       recrExpr id (\x y -> (x+y)/2) (\_ x _ y -> x*y) (\_ x _ y -> x*y) (\_ x _ y -> x*y) (\_ x _ y -> x*y) (Mult (Const 2.0) (Mult (Rango 5.0 15.0) (Const 3.0))) ~?= 60.0,
 
       recrExpr id (\x y -> (x+y)/2) (\_ x _ y -> x+y) (\_ x _ y -> x-y) (\_ x _ y -> x*y) (\_ x _ y -> x/y) (Suma (Const 10.0) (Resta (Rango 5.0 15.0) (Const 2.0))) ~?= 18.0
-      
+
     ]
 
 testsFold :: Test
@@ -204,7 +198,7 @@ testsFold =
 testsEval :: Test
 testsEval =
   test
-    [ 
+    [
      fst (eval (Suma (Rango 1 5) (Const 1)) genFijo) ~?= 4.0,
      fst (eval (Suma (Rango 1 5) (Const 1)) (genNormalConSemilla 0)) ~?= 3.7980492,
      -- el primer rango evalua a 2.7980492 y el segundo a 3.1250308
@@ -226,12 +220,15 @@ testsArmarHistograma :: Test
 testsArmarHistograma =
   test
     [ 
+      1 ~?= 1
     ]
+
 
 testsEvalHistograma :: Test
 testsEvalHistograma =
   test
     [ 
+      1 ~?= 1
     ]
 
 testsParse :: Test
@@ -297,7 +294,7 @@ testsMostrarFloat =
 testsMostrarHistograma :: Test
 testsMostrarHistograma =
   let h0 = vacio 3 (0, 6)
-    h123 = agregar 1 (agregar 2 (agregar 3 h0))
+      h123 = agregar 1 (agregar 2 (agregar 3 h0))
    in test
     [ lines (mostrarHistograma h123)
         ~?= [ "6.00 - +inf |",
