@@ -3,6 +3,18 @@ que la siguiente expresión es válida ∀x :: Expr. cantLit x = S (cantOp x)
 
 Definimos el predicado: ∀x:: Expr. P(x): cantLit x = S (cantOp x)
 
+b) Esquema formal de inducción estructural sobre Expr:
+
+Para demostrar que ∀x::Expr. P(x), debemos probar:
+
+1. Casos base:
+   - ∀a::Float. P(Const a)
+   - ∀a,b::Float. P(Rango a b)
+
+2. Paso inductivo:
+   - ∀a,b::Expr. P(a) ∧ P(b) ⟹ P(Suma a b)
+
+
 Casos base
 ∀a :: Float.  P(Const a): 
     
@@ -20,21 +32,21 @@ cantLit (Rango a b) = {L2} S Z = {O2} S (cantOp (Rango a b)).
 Llegamos al otro lado del igual que queriamos probar por lo tanto
 vale P(Rango a b) para todo a,b::Float
 
-Paso Inductivo: Asumimos  que ∀a,b::Expr. vale P(a) && P(b). 
-    Y qvq vale (P(Suma a b)).
+Paso Inductivo: Sean a, b :: Expr
 
-    HI cantLit a = S (cantOp a) && cantLit b = S (cantOp b)
+    HI  P(a) && P(b)
+        cantLit a = S (cantOp a) && cantLit b = S (cantOp b)
+
     TI cantLit (Suma a b) = S (cantOp (Suma a b))
     
         cantLit (Suma a b) = S (cantOp (Suma a b))
+        
 ={L3}  suma (cantLit a) (cantLit b) = S (cantOp (Suma a b))
 ={HI}  suma (S (cantOp a)) (S (cantOp b)) = S (cantOp (Suma a b))
 ={S2}  S ( suma (cantOp a) (S (cantOp b)) ) = S (cantOp (Suma a b))
 ={CONMUT} S ( suma (S (cantOp b) ) (cantOp a) ) = S (cantOp (Suma a b))
 ={S2}  S ( S ( suma (cantOp b) (cantOp a) ) ) = S (cantOp (Suma a b))
+={CONMUT} S ( S (suma (cantOp a) (cantOp b) ) ) = S (cantOp (Suma a b))
+={O3}  S ( cantOp (Suma a b ) ) = S (cantOp (Suma a b))
 
-=> Por inyectividad de S en el tipo Nat (S a) = (S b) <=> a = b, por lo tanto podemos simplificar una S de cada lado de la ecuación.
 
-=      S ( suma (cantOp b) (cantOp a) ) = cantOp (Suma a b)
-={O3}  S ( suma (cantOp b) (cantOp a))  =  S (suma (cantOp a) (cantOp b) )
-={CONMUT} S ( suma (cantOp a) (cantOp b) ) = S (suma (cantOp a) (cantOp b) )

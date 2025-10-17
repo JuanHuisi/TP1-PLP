@@ -53,7 +53,8 @@ eval = foldExpr
         (\x g -> (x, g))                 -- Caso Const x
         (\d u -> dameUno (d, u))         -- Caso Rango x y
 
-        {-  Para estos casos, la idea es que vamos a tener Suma x y y además g será nuestro gen.
+
+        {-  Para estos casos, la idea es que vamos a tener Suma x y, y además g será nuestro gen.
             Primero evaluamos x g para obtener (a, g1), luego y g1 para (b, g2),
             y finalmente combinamos con la operación y devolvemos g2. -}
         (fAux (+))  -- Caso suma 

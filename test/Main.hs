@@ -219,8 +219,10 @@ testsEval =
 testsArmarHistograma :: Test
 testsArmarHistograma =
   test
-    [ 
-      1 ~?= 1
+    [
+    map casCantidad (casilleros (fst $ armarHistograma 3 5 (\g -> (2.0,g)) genFijo)) ~?= [0,0,5,0,0], 
+    map casCantidad (casilleros (fst $ armarHistograma 3 5 (dameUno (1,5)) genFijo)) ~?= [0,0,5,0,0],
+    map casCantidad ( casilleros ( fst $ armarHistograma 3 5 (dameUno (1,6)) (genNormalConSemilla 5))) ~?= [0,1,3,1,0]
     ]
 
 
@@ -228,7 +230,7 @@ testsEvalHistograma :: Test
 testsEvalHistograma =
   test
     [ 
-      1 ~?= 1
+      map casCantidad (casilleros (fst ( evalHistograma 11 10000 (Suma (Rango 1 5) (Rango 100 105)) (genNormalConSemilla 0)))) ~?= [239,288,522,810,1110,1389,1394,1295,1076,793,520,310,254]
     ]
 
 testsParse :: Test
