@@ -164,13 +164,13 @@ testsCasilleros =
               Casillero 2.0 4.0 1 100.0,
               Casillero 4.0 6.0 0 0.0,
               Casillero 6.0 infinitoPositivo 0 0.0
-            ]
+            ],
 
       casilleros (histograma 2 (0,4) [1,3,5]) 
         ~?= [ Casillero infinitoNegativo 0.0 0 0.0,
               Casillero 0.0 2.0 1 33.333336,
               Casillero 2.0 4.0 1 33.333336,
-              Casillero 4.0 infinitoPositivo 1 33.333336]
+              Casillero 4.0 infinitoPositivo 1 33.333336],
 
       casilleros (histograma 4 (1,5) [1,1,1,1])
         ~?= [ Casillero infinitoNegativo 1.0 0 0.0,
@@ -244,8 +244,8 @@ testsEvalHistograma :: Test
 testsEvalHistograma =
   test
     [ 
-      map casCantidad (casilleros (fst ( evalHistograma 11 10000 (Suma (Rango 1 5) (Rango 100 105)) (genNormalConSemilla 0)))) ~?= [239,288,522,810,1110,1389,1394,1295,1076,793,520,310,254]
-      map casCantidad (casilleros (fst ( evalHistograma 5 1000 (Mult (Rango 1 5) (Const 2)) (genNormalConSemilla 5)))) ~?= [28,93,225,297,235,97,25]
+      map casCantidad (casilleros (fst ( evalHistograma 11 10000 (Suma (Rango 1 5) (Rango 100 105)) (genNormalConSemilla 0)))) ~?= [239,288,522,810,1110,1389,1394,1295,1076,793,520,310,254],
+      map casCantidad (casilleros (fst ( evalHistograma 5 1000 (Mult (Rango 1 5) (Const 2)) (genNormalConSemilla 5)))) ~?= [28,93,225,297,235,97,25],
       map casCantidad (casilleros (fst ( evalHistograma 4 500 (Suma (Const 2) (Rango 1 5)) (genNormalConSemilla 10)))) ~?= [7,78,166,166,71,12]
       --Este test no estoy seguro si se puede poner. Por si acaso lo dejo comentado.
       --fst ( evalHistograma 3 200 (Div (Const 20) (Resta (Const 11) (Rango 1 5))) (genNormalConSemilla 15)) ~?= Histograma 1.846874 0.47825512 [0,55,104,29,12]

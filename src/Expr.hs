@@ -100,32 +100,21 @@ mostrar = recrExpr
             show    -- Const
             (\l u -> show l ++ "~" ++ show u)   -- Rango
 
-            (\exprA strA exprB strB ->
-              lleva_parent [CEResta, CEMult, CEDiv] exprA strA
-            ++ " + "
-            ++ lleva_parent [CEResta, CEMult, CEDiv] exprB strB) -- Suma
+            (toString [CEResta, CEMult, CEDiv] " + ") -- Suma
 
-            (\exprA strA exprB strB ->
-              lleva_parent [CESuma, CEResta] exprA strA
-            ++ " - "
-            ++ lleva_parent [CESuma, CEResta] exprB strB) -- Resta
+            (toString [CESuma, CEResta] " - ") -- Resta
 
-            (\exprA strA exprB strB ->
-              lleva_parent [CESuma, CEResta, CEDiv] exprA strA
-            ++ " * "
-            ++ lleva_parent [CESuma, CEResta, CEDiv] exprB strB) -- Mult
+            (toString [CESuma, CEResta, CEDiv] " * ") -- Mult
 
-            (\exprA strA exprB strB ->
-              lleva_parent [CESuma, CEResta] exprA strA
-            ++ " / "
-            ++ strB) -- Div
+            (toString [CESuma, CEResta] " / ") -- Div
 
           where
             -- si el constructor del Expr esta en la lista, pone parentesis
             lleva_parent :: [ConstructorExpr] -> Expr -> String -> String
             lleva_parent cs e s = maybeParen (constructor e `elem` cs) s
 
-
+            toString :: [ConstructorExpr] -> String -> Expr -> String -> Expr -> String -> String
+            toString ce str exprA strA exprB strB = (lleva_parent ce exprA strA) ++ str ++ (lleva_parent ce exprB strB)
 
 
 data ConstructorExpr = CEConst | CERango | CESuma | CEResta | CEMult | CEDiv

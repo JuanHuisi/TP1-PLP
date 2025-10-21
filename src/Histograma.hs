@@ -87,11 +87,13 @@ casilleros h = zipWith4 Casillero
                       (casCant h)
                       (casPor h)
   where
+    limites l u xs = [(l + fromIntegral x * u) | x <- [0..(length xs - 2)]]
+
     casMin :: Histograma -> [Float]
-    casMin (Histograma l u xs) = [infinitoNegativo] ++ [(l + fromIntegral x * u) | x <- [0..(length xs - 2)]]
+    casMin (Histograma l u xs) = [infinitoNegativo] ++ limites l u xs
 
     casMax :: Histograma -> [Float]
-    casMax (Histograma l u xs) = [(l + fromIntegral x * u)| x <- [0..(length xs - 2)]] ++ [infinitoPositivo]
+    casMax (Histograma l u xs) = limites l u xs ++ [infinitoPositivo]
 
     casCant :: Histograma -> [Int]
     casCant (Histograma l u xs) = xs

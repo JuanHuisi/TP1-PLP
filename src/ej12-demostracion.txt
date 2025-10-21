@@ -1,11 +1,12 @@
 Demostremos por inducción estructural sobre la estructura de Expr
 que la siguiente expresión es válida ∀x :: Expr. cantLit x = S (cantOp x)
 
-Definimos el predicado: ∀x:: Expr. P(x): cantLit x = S (cantOp x)
+Definimos el predicado: ∀x:: Expr. P(x).
+                        P(x):= cantLit x = S (cantOp x)
 
 b) Esquema formal de inducción estructural sobre Expr:
 
-Para demostrar que ∀x::Expr. P(x), debemos probar:
+Para demostrar que ∀x::Expr. P(x). Esto implica probar que:
 
 1. Casos base:
    - ∀a::Float. P(Const a)
@@ -14,6 +15,7 @@ Para demostrar que ∀x::Expr. P(x), debemos probar:
 2. Paso inductivo:
    - ∀a,b::Expr. P(a) ∧ P(b) ⟹ P(Suma a b)
 
+Si ambos puntos son ciertos, entonces podemos concluir que P(x) es válido para todo x::Expr.
 
 Casos base
 ∀a :: Float.  P(Const a): 
