@@ -247,8 +247,6 @@ testsEvalHistograma =
       map casCantidad (casilleros (fst ( evalHistograma 11 10000 (Suma (Rango 1 5) (Rango 100 105)) (genNormalConSemilla 0)))) ~?= [239,288,522,810,1110,1389,1394,1295,1076,793,520,310,254],
       map casCantidad (casilleros (fst ( evalHistograma 5 1000 (Mult (Rango 1 5) (Const 2)) (genNormalConSemilla 5)))) ~?= [28,93,225,297,235,97,25],
       map casCantidad (casilleros (fst ( evalHistograma 4 500 (Suma (Const 2) (Rango 1 5)) (genNormalConSemilla 10)))) ~?= [7,78,166,166,71,12]
-      --Este test no estoy seguro si se puede poner. Por si acaso lo dejo comentado.
-      --fst ( evalHistograma 3 200 (Div (Const 20) (Resta (Const 11) (Rango 1 5))) (genNormalConSemilla 15)) ~?= Histograma 1.846874 0.47825512 [0,55,104,29,12]
     ]
 
 testsParse :: Test

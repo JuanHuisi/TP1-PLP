@@ -57,15 +57,15 @@ eval = foldExpr
         {-  Para estos casos, la idea es que vamos a tener Suma x y, y además g será nuestro gen.
             Primero evaluamos x g para obtener (a, g1), luego y g1 para (b, g2),
             y finalmente combinamos con la operación y devolvemos g2. -}
-        (fAux (+))  -- Caso suma 
-        (fAux (-))  -- Caso resta
-        (fAux (*))  -- Caso mult
-        (fAux (/))  -- Caso div
+        (evalBOp (+))  -- Caso suma 
+        (evalBOp (-))  -- Caso resta
+        (evalBOp (*))  -- Caso mult
+        (evalBOp (/))  -- Caso div
 
   where
-    fAux operacion x y g = let (a, g1) = x g
-                               (b, g2) = y g1
-                           in (operacion a b, g2)
+    evalBOp operacion x y g = let (a, g1) = x g
+                                  (b, g2) = y g1
+                              in (operacion a b, g2)
 
 
 
