@@ -50,7 +50,7 @@ foldExpr fConst fRango fSuma fResta fMult fDiv fExpr = case fExpr of
 -- Lo hacemos para ambos elementos y para la operación final. 
 eval :: Expr -> G Float
 eval = foldExpr
-        (\x g -> (x, g))                 -- Caso Const x
+        (,)                 -- Caso Const x
         (\d u -> dameUno (d, u))         -- Caso Rango x y
 
 
